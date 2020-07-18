@@ -27,4 +27,4 @@ elif (query == 10):
     answer = "deach"
 
 
-print(f"Your number was: {answer}, comhghairdeas")
+print(f"Your number was: {answer}, comhghairdeas a chara!")
