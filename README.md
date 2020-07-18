@@ -22,3 +22,6 @@ https://data.world/kcmillersean/billboard-hot-100-1958-2017
 18 July 2020:
 Music genres were too specific and we had to simpfily them. 
 We used the explode command to get a more broad genre.
+# genre_df = genre_df.set_index(['Performer', 'Song'])
+# new_df = genre_df['spotify_genre'].str.split(pat=",", expand=True)
+# new_df.head()
