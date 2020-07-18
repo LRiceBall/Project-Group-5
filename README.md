@@ -17,3 +17,8 @@ What musical attributes might affect this?
 
 Data Files:
 https://data.world/kcmillersean/billboard-hot-100-1958-2017
+
+
+18 July 2020:
+Music genres were too specific and we had to simpfily them. 
+We used the explode command to get a more broad genre.
