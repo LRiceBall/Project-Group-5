@@ -1,0 +1,215 @@
+%matplotlib inline
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+file1 = "Resources/Hot 100 Audio Features.csv"
+file2 = "Resources/Hot Stuff.csv"
+
+audio_features = pd.read_csv(file1)
+hot100 = pd.read_csv(file2)
+
+merge_df = pd.merge(audio_features, hot100, on=["Song", "Performer", "SongID"], how="outer")
+merge_df.head()
+
+# merge csv by columns
+merge_df.columns
+
+# select desired columns
+reduced_df = merge_df[['Performer', 'Song', 'spotify_genre', 'spotify_track_duration_ms',
+                       'spotify_track_popularity', 'danceability', 'energy', 'loudness', 'valence', 
+                       'tempo', 'WeekID', 'Week Position', 'Previous Week Position', 'Peak Position',
+                       'Weeks on Chart']]
+reduced_df
+
+reduced_df= reduced_df.rename(columns={'spotify_genre': 'Genre', 'energy': 'Energy',
+                                       'loudness': 'Loudness'})
+
+# reduce columns for energy and loudness
+attributes_df = reduced_df[['Performer', 'Song', 'Genre', 'Energy', 'Loudness', 
+                       'WeekID', 'Week Position', 'Previous Week Position', 'Peak Position',
+                       'Weeks on Chart']]
+attributes_df
+
+# number of times a song is in the top 100
+attributes_df["Song"].value_counts()
+
+# select only songs in top 40
+top40 = attributes_df.loc[attributes_df['Week Position'] <= 40, :]
+top40.dropna(subset=['Energy', 'Loudness', 'Weeks on Chart'])
+top40
+
+# each time a song is listed as being in the top 100 the "weeks on chart" is the moist CURRENT number
+    # there for all different
+# get the highest amount of weeks a song has been in the top 40.
+top40_song = top40.groupby(['Performer','Song'], as_index=False)
+
+max_weeks = top40_song['Weeks on Chart'].max()
+max_weeks
+
+# sort by frequency on top 40
+ranking_songs = max_weeks.sort_values("Weeks on Chart", ascending=False)
+ranking_songs
+
+# reduce columns to focus on energy
+
+energy_df = top40[['Performer', 'Song', 'Genre', 'Energy', 'Peak Position', 'Weeks on Chart']]
+energy_df
+
+# remove NaN values in the genre and energy columns
+energy_df = energy_df[energy_df['Genre'].notna()]
+energy_df = energy_df[energy_df['Energy'].notna()]
+energy_df
+
+# get the max energy value
+energy_df['Energy'].max()
+
+# get the min energy value
+energy_df['Energy'].min()
+
+# create a new column in bins based on energy
+energy_bins = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+energy_labels = ['0 to 0.1', '0.11 to 0.2', '0.21 to 0.3', '0.31 to 0.4', '0.41 to 0.5', '0.51 to 0.6', '0.61 to 0.7', '0.71 to 0.8', '0.81 to 0.9', '0.91 to 1.0']
+
+energy_df["Energy Category"] = pd.cut(energy_df["Energy"], energy_bins, 
+                                          labels=energy_labels, right=False)
+energy_df
+
+# convert new bins to strings
+energy_df['Energy Category'] = energy_df['Energy Category'].apply(str)
+
+# create a scatter plot with ALL top 40 songs
+energy_df.plot.scatter(x='Weeks on Chart', y='Energy', grid=True, figsize=(20,8),
+                         title='Energy vs Weeks in Top 40')
+plt.savefig("energy scatter.png")
+plt.show
+                         
+
+# create a heat map with ALL top 40 songs
+energy_map= sns.jointplot(x="Energy", y="Weeks on Chart", data=energy_df, kind="hex")
+energy_map.savefig("energy heatmap.png")
+
+# group data by song & disple with energy category
+energy_ranking_song = energy_df.groupby(['Song', "Energy Category"], as_index=False)
+energy_ranking_max = energy_ranking_song['Weeks on Chart'].max()
+energy_ranking_max = energy_ranking_max.dropna(subset=['Weeks on Chart'])
+energy_ranking_max
+
+# take the max weeks a song is on the top 40 and show the highest rankers
+energy_ranking = energy_ranking_max.sort_values("Weeks on Chart", ascending=False).dropna(subset=['Weeks on Chart'])
+energy_ranking
+
+energy_barchart = energy_ranking.plot(kind='bar')
+energy_barchart.set_xlabel('Energy Category')
+energy_barchart.set_ylabel('Weeks on Chart')
+plt.savefig("energy-weeks bar.png")
+plt.show()
+
+energy_ranking = energy_ranking.sort_values(['Energy Category', "Weeks on Chart"])
+
+energy_groups = energy_ranking.groupby('Energy Category')
+energy_category = energy_groups['Weeks on Chart'].mean()
+
+!pip install plotly
+
+import plotly.graph_objects as go
+import plotly.express as px
+energy_boxplot = px.box(energy_ranking, x="Energy Category", y="Weeks on Chart")
+energy_boxplot.show()
+
+energy_df['Energy Category'].value_counts()
+
+energy_df['Weeks on Chart'].value_counts()
+
+energy_df['Energy Category'] = energy_df['Energy Category'].apply(str)
+
+outlires_removed = []
+
+one_df = energy_df[(energy_df['Energy Category'] == '0 to 0.1')]
+
+two_df = energy_df[(energy_df['Energy Category'] == '0.11 to 0.2') & (energy_df['Weeks on Chart'] < 38)]
+                     
+three_df = energy_df[(energy_df['Energy Category'] == '0.21 to 0.3') & (energy_df['Weeks on Chart'] < 32)]
+    
+four_df = energy_df[(energy_df['Energy Category'] == '0.31 to 0.4') & (energy_df['Weeks on Chart'] < 27)]
+                     
+five_df = energy_df[(energy_df['Energy Category'] == '0.41 to 0.5') & (energy_df['Weeks on Chart'] < 25)]
+
+six_df = energy_df[(energy_df['Energy Category'] == '0.51 to 0.6') & (energy_df['Weeks on Chart'] < 25)]
+
+seven_df = energy_df[(energy_df['Energy Category'] == '0.61 to 0.7') & (energy_df['Weeks on Chart'] < 37)]
+                     
+eight_df = energy_df[(energy_df['Energy Category'] == '0.71 to 0.8') & (energy_df['Weeks on Chart'] < 37)]
+    
+nine_df = energy_df[(energy_df['Energy Category'] == '0.81 to 0.9') & (energy_df['Weeks on Chart'] < 37)]
+                     
+ten_df = energy_df[(energy_df['Energy Category'] == '0.91 to 1.0') & (energy_df['Weeks on Chart'] < 37)]
+
+
+
+outlires_removed.append(one_df)
+outlires_removed.append(two_df)
+outlires_removed.append(three_df)
+outlires_removed.append(four_df)
+outlires_removed.append(five_df)
+outlires_removed.append(six_df)
+outlires_removed.append(seven_df)
+outlires_removed.append(eight_df)
+outlires_removed.append(nine_df)
+outlires_removed.append(ten_df)
+
+outlires_removed
+
+final_energy = pd.concat(outlires_removed)
+final_energy
+
+final_energy = final_energy.sort_values(['Energy Category', "Weeks on Chart"])
+
+
+final_energy
+
+final_energy_boxplot = px.box(final_energy, x="Energy Category", y="Weeks on Chart")
+final_energy_boxplot.show()
+
+final_energy_groups = final_energy.groupby('Energy Category')
+final_energy_category = final_energy_groups['Weeks on Chart'].mean()
+
+energy_cat_chart = final_energy_category.plot.bar(title ='Energy on Charts')
+energy_cat_chart.set_xlabel('Energy Category')
+energy_cat_chart.set_ylabel('Avg Weeks on Charts')
+plt.savefig("energy-weeks binned.png")
+plt.show
+
+energy_map2= sns.jointplot(x="Energy", y="Weeks on Chart", data=final_energy, kind="hex")
+energy_map2.savefig("energy heatmap2.png")
+
+
+
+energy_ranking_song2 = final_energy.groupby(['Song', "Energy Category"], as_index=False)
+energy_ranking_max2 = energy_ranking_song2['Peak Position'].max()
+energy_ranking_max2 = energy_ranking_max2.dropna(subset=['Peak Position'])
+energy_ranking_max2
+
+energy_ranking2 = energy_ranking_max2.sort_values("Peak Position", ascending=True).dropna(subset=['Peak Position'])
+energy_ranking2
+
+energy_ranking2 = energy_ranking2.sort_values(["Peak Position"])
+
+energy_barchart2 = energy_ranking2.plot(kind='bar')
+energy_barchart2.set_xlabel('Energy Category')
+energy_barchart2.set_ylabel('Peak Position')
+plt.savefig("energy-peak bar.png")
+plt.show()
+
+
+energy_groups2 = energy_ranking2.groupby('Energy Category')
+energy_category2 = energy_groups2['Peak Position'].mean()
+
+energy_cat_chart2 = energy_category2.plot.bar(title ='Energy on Charts')
+energy_cat_chart2.set_xlabel('Energy Category')
+energy_cat_chart2.set_ylabel('Avg Peak Postion')
+plt.savefig("energy-peak binned.png")
+plt.show
