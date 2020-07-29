@@ -1,0 +1,214 @@
+%matplotlib inline
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+file1 = "Resources/Hot 100 Audio Features.csv"
+file2 = "Resources/Hot Stuff.csv"
+
+audio_features = pd.read_csv(file1)
+hot100 = pd.read_csv(file2)
+
+merge_df = pd.merge(audio_features, hot100, on=["Song", "Performer", "SongID"], how="outer")
+merge_df.head()
+
+# merge csv by columns
+merge_df.columns
+
+# select desired columns
+reduced_df = merge_df[['Performer', 'Song', 'spotify_genre', 'spotify_track_duration_ms',
+                       'spotify_track_popularity', 'danceability', 'energy', 'loudness', 'valence', 
+                       'tempo', 'WeekID', 'Week Position', 'Previous Week Position', 'Peak Position',
+                       'Weeks on Chart']]
+reduced_df
+
+reduced_df= reduced_df.rename(columns={'spotify_genre': 'Genre', 'energy': 'Energy',
+                                       'loudness': 'Loudness'})
+
+# reduce columns for energy and loudness
+attributes_df = reduced_df[['Performer', 'Song', 'Genre', 'Energy', 'Loudness', 
+                       'WeekID', 'Week Position', 'Previous Week Position', 'Peak Position',
+                       'Weeks on Chart']]
+attributes_df
+
+# number of times a song is in the top 100
+attributes_df["Song"].value_counts()
+
+# select only songs in top 40
+top40 = attributes_df.loc[attributes_df['Week Position'] <= 40, :]
+top40.dropna(subset=['Energy', 'Loudness', 'Weeks on Chart'])
+top40
+
+# each time a song is listed as being in the top 100 the "weeks on chart" is the moist CURRENT number
+    # there for all different
+# get the highest amount of weeks a song has been in the top 40.
+top40_song = top40.groupby(['Performer','Song'], as_index=False)
+
+max_weeks = top40_song['Weeks on Chart'].max()
+max_weeks
+
+# sort by frequency on top 40
+ranking_songs = max_weeks.sort_values("Weeks on Chart", ascending=False)
+ranking_songs
+
+# reduce columns to focus on loudness
+loudness_df = top40[['Performer', 'Song', 'Genre', 'Loudness', 'Peak Position', 'Weeks on Chart']]
+loudness_df
+
+# remove NaN values in the genre and loudness columns
+loudness_df = loudness_df[loudness_df['Genre'].notna()]
+loudness_df = loudness_df[loudness_df['Loudness'].notna()]
+loudness_df
+
+# get the max loudness value
+loudness_df['Loudness'].max()
+
+# get the min loudness value
+loudness_df['Loudness'].min()
+
+# create a new column in bins based on loudness
+loud_bins = [-30, -27, -24, -21, -18, -15, -12, -9, -6, -3, 0]
+loud_labels = ['-30 to -28', '-27 to -25', '-24 to -22', '-21 to -19', '-18 to -16', '-15 to -13', '-12 to -10', '-9 to -7', '-6 to -4', '-3 to 0']
+
+loudness_df["Loudness Category"] = pd.cut(loudness_df["Loudness"], loud_bins, 
+                                          labels=loud_labels, right=False)
+loudness_df
+
+# convert new bins to strings
+loudness_df['Loudness Category'] = loudness_df['Loudness Category'].apply(str)
+
+# create a scatter plot with ALL top 40 songs
+loudness_df.plot.scatter(x='Weeks on Chart', y='Loudness', grid=True, figsize=(20,8),
+                         title='Loudness vs Weeks in Top 40')
+plt.savefig("loudness scatter.png")
+plt.show
+                         
+
+# create a heat map with ALL top 40 songs
+loudness_map= sns.jointplot(x="Loudness", y="Weeks on Chart", data=loudness_df, kind="hex")
+loudness_map.savefig("loudness heatmap.png")
+
+# group data by song & disple with loud category
+loud_ranking_song = loudness_df.groupby(['Song', "Loudness Category"], as_index=False)
+loud_ranking_max = loud_ranking_song['Weeks on Chart'].max()
+loud_ranking_max = loud_ranking_max.dropna(subset=['Weeks on Chart'])
+loud_ranking_max
+
+# take the max weeks a song is on the top 40 and show the highest rankers
+loud_ranking = loud_ranking_max.sort_values("Weeks on Chart", ascending=False).dropna(subset=['Weeks on Chart'])
+loud_ranking
+
+#loud_barchart = loud_ranking.plot(kind='bar')
+#loud_barchart.set_xlabel('Loudness Category')
+#loud_barchart.set_ylabel('Weeks on Chart')
+#plt.savefig("loudness-weeks bar.png")
+#plt.show()
+
+loud_ranking = loud_ranking.sort_values(['Loudness Category', "Weeks on Chart"])
+
+loud_groups = loud_ranking.groupby('Loudness Category')
+loud_category = loud_groups['Weeks on Chart'].mean()
+
+!pip install plotly
+
+import plotly.graph_objects as go
+import plotly.express as px
+loud_boxplot = px.box(loud_ranking, x="Loudness Category", y="Weeks on Chart")
+loud_boxplot.show()
+
+loudness_df['Loudness Category'].value_counts()
+
+loudness_df['Weeks on Chart'].value_counts()
+
+loudness_df['Loudness Category'] = loudness_df['Loudness Category'].apply(str)
+
+outlires_removed = []
+
+one_df = loudness_df[(loudness_df['Loudness Category'] == '-3 to 0') & (loudness_df['Weeks on Chart'] < 37)]
+
+two_df = loudness_df[(loudness_df['Loudness Category'] == '-6 to -4') & (loudness_df['Weeks on Chart'] < 38)]
+                     
+three_df = loudness_df[(loudness_df['Loudness Category'] == '-9 to -7') & (loudness_df['Weeks on Chart'] < 32)]
+    
+four_df = loudness_df[(loudness_df['Loudness Category'] == '-12 to -10') & (loudness_df['Weeks on Chart'] < 27)]
+                     
+five_df = loudness_df[(loudness_df['Loudness Category'] == '-15 to -13') & (loudness_df['Weeks on Chart'] < 25)]
+
+six_df = loudness_df[(loudness_df['Loudness Category'] == '-18 to -16') & (loudness_df['Weeks on Chart'] < 25)]
+
+seven_df = loudness_df[(loudness_df['Loudness Category'] == '-21 to -19')]
+                     
+eight_df = loudness_df[(loudness_df['Loudness Category'] == '-24 to -22')]
+    
+nine_df = loudness_df[(loudness_df['Loudness Category'] == '-27 to -25')]
+                     
+ten_df = loudness_df[(loudness_df['Loudness Category'] == '-30 to -28')]
+
+
+
+
+outlires_removed.append(one_df)
+outlires_removed.append(two_df)
+outlires_removed.append(three_df)
+outlires_removed.append(four_df)
+outlires_removed.append(five_df)
+outlires_removed.append(six_df)
+outlires_removed.append(seven_df)
+outlires_removed.append(eight_df)
+outlires_removed.append(nine_df)
+outlires_removed.append(ten_df)
+
+outlires_removed
+
+final_loud = pd.concat(outlires_removed)
+final_loud
+
+final_loud = final_loud.sort_values(['Loudness Category', "Weeks on Chart"])
+
+
+final_loud
+
+final_loud_boxplot = px.box(final_loud, x="Loudness Category", y="Weeks on Chart")
+final_loud_boxplot.show()
+
+final_loud_groups = final_loud.groupby('Loudness Category')
+final_loud_category = final_loud_groups['Weeks on Chart'].mean()
+
+loud_cat_chart = final_loud_category.plot.bar(title ='Loudness on Charts')
+loud_cat_chart.set_xlabel('Loudness Category')
+loud_cat_chart.set_ylabel('Avg Weeks on Charts')
+plt.savefig("loudness-weeks binned.png")
+plt.show
+
+loudness_map2= sns.jointplot(x="Loudness", y="Weeks on Chart", data=final_loud, kind="hex")
+loudness_map.savefig("loudness heatmap2.png")
+
+loud_ranking_song2 = final_loud.groupby(['Song', "Loudness Category"], as_index=False)
+loud_ranking_max2 = loud_ranking_song2['Peak Position'].max()
+loud_ranking_max2 = loud_ranking_max2.dropna(subset=['Peak Position'])
+loud_ranking_max2
+
+loud_ranking2 = loud_ranking_max2.sort_values("Peak Position", ascending=True).dropna(subset=['Peak Position'])
+loud_ranking2
+
+loud_ranking2 = loud_ranking2.sort_values(["Peak Position"])
+
+loud_barchart2 = loud_ranking2.plot(kind='bar')
+loud_barchart2.set_xlabel('Loudness Category')
+loud_barchart2.set_ylabel('Peak Position')
+plt.savefig("loudness-peak bar.png")
+plt.show()
+
+loud_groups2 = loud_ranking2.groupby('Loudness Category')
+loud_category2 = loud_groups2['Peak Position'].mean()
+
+loud_cat_chart2 = loud_category2.plot.bar(title ='Loudness on Charts')
+loud_cat_chart2.set_xlabel('Loudness Category')
+loud_cat_chart2.set_ylabel('Avg Peak Postion')
+plt.savefig("loudness-peak binned.png")
+plt.show
+
+
