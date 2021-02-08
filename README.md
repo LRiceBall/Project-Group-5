@@ -1,12 +1,6 @@
 # Project-Group-5
-Project Name:
+Project Name: Trending Music Attributes
 
-Members:
-Laura Rice
-Gianni Adamo
-Adam Mcvey
-Amr Alwakeal
-Matthew Berkley
 
 Category: Music
 
@@ -52,3 +46,13 @@ Primarily, designated song attributes and duration songs are in top 40
 5.)Used dropna on ONLY columns that each person was actually using
 Using dropna on the whole dataframe left us with 5 rows of data
 Using dropna ONLY on the columns used left each person with ~120,000 rows.
+
+
+Members:
+[Laura Rice](https://github.com/LRiceBall)
+
+[Gianni Adamo](https://github.com/gianx1)
+
+[Adam McVey](https://github.com/adamemcvey)
+
+[Matthew Berkley](https://github.com/mberkley25)
