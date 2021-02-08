@@ -49,6 +49,7 @@ Using dropna ONLY on the columns used left each person with ~120,000 rows.
 
 
 Members:
+
 [Laura Rice](https://github.com/LRiceBall)
 
 [Gianni Adamo](https://github.com/gianx1)
