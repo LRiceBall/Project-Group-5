@@ -36,6 +36,13 @@ Data Organization:
 <img src="Energy Data/Visuals/energy final box.png" width="400">
 </div>
 
+Tools:
+- Python
+- Pandas
+- Jupyter Labs
+- Matplotlib
+- Plotly
+
 
 Members:
 
