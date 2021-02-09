@@ -31,7 +31,7 @@ Data Organization:
 
 
 <div align="center">
-<img src="" width="400"> <img src="" width="400">
+<img src="Energy Data/Visuals/energy-weeks bar.png" width="400"> <img src="" width="400">
 <img src="" width="400"> <img src="" width="400">
 </div>
 
