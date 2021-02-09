@@ -30,6 +30,10 @@ Data Organization:
 -	Use final data sets to organize, compare, and create visualizations to show the impact each attribute has on a song’s placement in the top 40
 
 
+<div align="center">
+<img src="" width="400"> <img src="" width="400">
+<img src="" width="400"> <img src="" width="400">
+</div>
 
 
 Members:
