@@ -32,8 +32,9 @@ Data Organization:
 
 
 <div align="center">
-<img src="Energy Data/Visuals/energy-weeks bar.png" width="400"> <img src="Energy Data/Visuals/energy heatmap2.png" width="400">
-<img src="Energy Data/Visuals/energy final box.png" width="400">
+<img src="Energy Data/Visuals/energy-weeks bar.png" width="400"> <img src="Energy Data/Visuals/energy final box.png" width="400">
+<img src="Energy Data/Visuals/energy heatmap2.png" width="400">
+
 </div>
 
 Tools:
